@@ -1,0 +1,171 @@
+---
+title: "Diffdf"
+author: "Craig Gower and Kieran Martin"
+date: "2018/08/16"
+output:
+  xaringan::moon_reader:
+    css: ["./libs/remark-css/default.css","./libs/remark-css/metropolis.css", "./libs/remark-css/metropolis-fonts.css" ]
+    lib_dir: libs
+    chakra:  libs/remark-latest.min.js
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+# Outline
+.font150[
+Who are we?
+
+What was the problem?
+
+How does diffdf solve it?
+
+Our future plans for the package
+]
+
+---
+
+# Who are we?
+
+
+.content-box-green[
+Kieran Martin and Craig Gower
+]
+--
+<br>
+.content-box-blue[
+Both members of I2ON SPA-DA group  at Roche
+]
+--
+<br>
+.content-box-green[
+Both advocates for R usage within SPA and across the organisation
+]
+
+  
+
+
+---
+
+# What was the problem?
+
+One key piece of programming work is setting up and qcing analysis datasets
+
+We believe this can be done in R
+--
+.content-box-green[
+How do we compare qc datasets?
+]
+
+---
+
+# With diffdf!
+
+**diffdf**
+.content-box-green[
+Package for **comparing datasets**
+
+Gives **informative feedback** on where issues are
+]
+
+--
+
+Main page: https://gowerc.github.io/diffdf/
+
+Now on CRAN: https://CRAN.R-project.org/package=diffdf
+
+Check out github: https://github.com/gowerc/diffdf
+
+---
+# diffdf tour of capabilities
+
+<a href = "diffdftour.html">Tour of capabilities</a>
+
+---
+
+# diffdf: missing columns:
+<br>
+
+```{r, include = FALSE}
+
+LENGTH = 30
+set.seed(12334)
+test_data <- tibble::tibble( 
+    ID          = 1:LENGTH,
+    GROUP1      = rep( c(1,2) , each = LENGTH/2),
+    GROUP2      = rep( c(1:(LENGTH/2)), 2 ),
+    INTEGER     = rpois(LENGTH , 40),
+    BINARY      = sample( c("M" , "F") , LENGTH , replace = T),
+    DATE        = lubridate::ymd("2000-01-01") + rnorm(LENGTH, 0, 7000),
+    DATETIME    = lubridate::ymd_hms("2000-01-01 00:00:00") + rnorm(LENGTH, 0, 200000000), 
+    CONTINUOUS  = rnorm(LENGTH , 30 , 12),
+    CATEGORICAL = factor(sample( c("A" , "B" , "C") , LENGTH , replace = T)),
+    LOGICAL     = sample( c(TRUE , FALSE) , LENGTH , replace = T),
+    CHARACTER   = stringi::stri_rand_strings(LENGTH,  rpois(LENGTH , 13),  pattern = "[ A-Za-z0-9]")
+)
+```
+
+
+```{r, warning=FALSE}
+library(diffdf)
+
+test_data2 <- test_data 
+test_data2 <- test_data2[,-6]
+diffdf(test_data , test_data2)
+```
+---
+# diffdf: missing rows
+<br>
+```{r, warning=FALSE}
+test_data2 <- test_data
+test_data2 <- test_data2[1:(nrow(test_data2) - 2),]
+diffdf(test_data, test_data2, keys = "ID")
+```
+---
+# diffdf: different values
+<br>
+```{r, warning=FALSE}
+test_data2 <- test_data
+test_data2[5,2] <- 6
+difval <- diffdf(test_data , test_data2, keys = "ID" )
+difval$NumDiff
+difval$VarDiff_GROUP1
+```
+---
+# diffdf: different attributes
+<br>
+```{r, warning=FALSE}
+test_data2 <- test_data
+attr(test_data$ID , "label") <- "This is a interesting label"
+attr(test_data2$ID , "label") <- "A different label"
+diffdf(test_data , test_data2, keys = "ID" )
+```
+---
+
+# Future plans for diffdf
+
+.content-box-green[
+Make it even faster with optimisation
+]
+--
+<br>
+.content-box-blue[
+Adding html views of the comparisons
+]
+--
+<br>
+.content-box-green[
+Refining based on feedback
+]
+
+
+
+
+
+

@@ -1,0 +1,97 @@
+---
+title: "diffdf tour"
+author: "kieran martin"
+date: "19 September 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We are going to explore some of diffdf's capabilities. We're going to use a package called salty to add some realistic errors, to see how they look when using diffdf
+
+```{r cars}
+library(diffdf)
+library(dplyr)
+library(salty)
+
+
+```
+
+```{r, include=FALSE}
+
+LENGTH = 30
+set.seed(12334)
+test_data <- tibble::tibble( 
+    ID          = 1:LENGTH,
+    GROUP1      = rep( c(1,2) , each = LENGTH/2),
+    GROUP2      = rep( c(1:(LENGTH/2)), 2 ),
+    INTEGER     = rpois(LENGTH , 40),
+    BINARY      = sample( c("M" , "F") , LENGTH , replace = T),
+    DATE        = lubridate::ymd("2000-01-01") + rnorm(LENGTH, 0, 7000),
+    DATETIME    = lubridate::ymd_hms("2000-01-01 00:00:00") + rnorm(LENGTH, 0, 200000000), 
+    CONTINUOUS  = rnorm(LENGTH , 30 , 12),
+    CATEGORICAL = factor(sample( c("A" , "B" , "C") , LENGTH , replace = T)),
+    LOGICAL     = sample( c(TRUE , FALSE) , LENGTH , replace = T),
+    CHARACTER   = stringi::stri_rand_strings(LENGTH,  rpois(LENGTH , 13),  pattern = "[ A-Za-z0-9]")
+)
+```
+
+We are going to work with some dummy data with lots of different data types
+
+```{r}
+test_data
+
+```
+Lets begin by seeing what happens if we alter the class of our data
+
+```{r}
+test_data2 <- test_data
+class(test_data2$GROUP1) <- "different"
+class(test_data2$BINARY) <- "another difference"
+diffdf(test_data, test_data2)
+```
+
+Lets's try fiddling with the columns next
+
+```{r}
+test_data2 <- test_data
+test_data2$GROUP1 <- NULL
+test_data2$newcol <- 5
+
+diffdf(test_data, test_data2)
+```
+
+For row by row comparison, it's usually best to specify a key on which to compare datasets
+
+```{r}
+test_data2 <- test_data[7:28,]
+
+diffdf(test_data, test_data2, keys = "ID")
+```
+
+Now let's look at modifying values. Here we will make use of some "salty" functions to modify the data
+
+```{r}
+test_data2 <- test_data
+test_data2 <- test_data2 %>% 
+  mutate_if(is.character, salt_insert, insertions = shaker$mixed_letters) 
+diffdf(test_data, test_data2, keys = "ID")
+```
+We don't have to rely on the print method, we can instead save the object and interrogate it:
+
+```{r}
+
+save <- diffdf(test_data, test_data2, keys = "ID")
+save$VarDiff_BINARY
+
+```
+
+Doing this also allows us to make use of another diffdf function, `diffdf_issuerows()`
+
+```{r}
+diffdf_issuerows(test_data, save)
+```
+
+

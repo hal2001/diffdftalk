@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Diffdf</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Craig Gower and Kieran Martin" />
+    <link rel="stylesheet" href="libs\remark-css\default.css" type="text/css" />
+    <link rel="stylesheet" href="libs\remark-css\metropolis.css" type="text/css" />
+    <link rel="stylesheet" href="libs\remark-css\metropolis-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Diffdf
+### Craig Gower and Kieran Martin
+### 2018/08/16
+
+---
+
+
+
+
+
+# Outline
+.font150[
+Who are we?
+
+What was the problem?
+
+How does diffdf solve it?
+
+Our future plans for the package
+]
+
+---
+
+# Who are we?
+
+
+.content-box-green[
+Kieran Martin and Craig Gower
+]
+--
+&lt;br&gt;
+.content-box-blue[
+Both members of I2ON SPA-DA group  at Roche
+]
+--
+&lt;br&gt;
+.content-box-green[
+Both advocates for R usage within SPA and across the organisation
+]
+
+  
+
+
+---
+
+# What was the problem?
+
+One key piece of programming work is setting up and qcing analysis datasets
+
+We believe this can be done in R
+--
+.content-box-green[
+How do we compare qc datasets?
+]
+
+---
+
+# With diffdf!
+
+**diffdf**
+.content-box-green[
+Package for **comparing datasets**
+
+Gives **informative feedback** on where issues are
+]
+
+--
+
+Main page: https://gowerc.github.io/diffdf/
+
+Now on CRAN: https://CRAN.R-project.org/package=diffdf
+
+Check out github: https://github.com/gowerc/diffdf
+
+---
+# diffdf tour of capabilities
+
+&lt;a href = "diffdftour.html"&gt;Tour of capabilities&lt;/a&gt;
+
+---
+
+# diffdf: missing columns:
+&lt;br&gt;
+
+
+
+
+
+```r
+library(diffdf)
+
+test_data2 &lt;- test_data 
+test_data2 &lt;- test_data2[,-6]
+diffdf(test_data , test_data2)
+```
+
+```
+## Differences found between the objects!
+## 
+## A summary is given below.
+## 
+## There are columns in BASE that are not in COMPARE !!
+## All rows are shown in table below
+## 
+##   =========
+##    COLUMNS 
+##   ---------
+##     DATE   
+##   ---------
+```
+---
+# diffdf: missing rows
+&lt;br&gt;
+
+```r
+test_data2 &lt;- test_data
+test_data2 &lt;- test_data2[1:(nrow(test_data2) - 2),]
+diffdf(test_data, test_data2, keys = "ID")
+```
+
+```
+## Differences found between the objects!
+## 
+## A summary is given below.
+## 
+## There are rows in BASE that are not in COMPARE !!
+## All rows are shown in table below
+## 
+##   ====
+##    ID 
+##   ----
+##    29 
+##    30 
+##   ----
+```
+---
+# diffdf: different values
+&lt;br&gt;
+
+```r
+test_data2 &lt;- test_data
+test_data2[5,2] &lt;- 6
+difval &lt;- diffdf(test_data , test_data2, keys = "ID" )
+difval$NumDiff
+```
+
+```
+## # A tibble: 1 x 2
+##   Variable `No of Differences`
+## * &lt;chr&gt;                  &lt;int&gt;
+## 1 GROUP1                     1
+```
+
+```r
+difval$VarDiff_GROUP1
+```
+
+```
+## # A tibble: 1 x 4
+##   VARIABLE    ID  BASE COMPARE
+## * &lt;chr&gt;    &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;
+## 1 GROUP1       5     1       6
+```
+---
+# diffdf: different attributes
+&lt;br&gt;
+
+```r
+test_data2 &lt;- test_data
+attr(test_data$ID , "label") &lt;- "This is a interesting label"
+attr(test_data2$ID , "label") &lt;- "A different label"
+diffdf(test_data , test_data2, keys = "ID" )
+```
+
+```
+## Differences found between the objects!
+## 
+## A summary is given below.
+## 
+## There are columns in BASE and COMPARE with differing attributes !!
+## All rows are shown in table below
+## 
+##   =====================================================================
+##    VARIABLE  ATTR_NAME          VALUES.BASE             VALUES.COMP    
+##   ---------------------------------------------------------------------
+##       ID       label    This is a interesting label  A different label 
+##   ---------------------------------------------------------------------
+```
+---
+
+# Future plans for diffdf
+
+.content-box-green[
+Make it even faster with optimisation
+]
+--
+&lt;br&gt;
+.content-box-blue[
+Adding html views of the comparisons
+]
+--
+&lt;br&gt;
+.content-box-green[
+Refining based on feedback
+]
+    </textarea>
+<script src="libs/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
