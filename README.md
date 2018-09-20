@@ -1,2 +1,2 @@
-# R4SPA-talk
-Slides for R4SPA talk, hosted [here](https://kieranjmartin.github.io/diffdftalk/) 
+# diffdf
+Slides for diffdf talk, hosted [here](https://kieranjmartin.github.io/diffdftalk/) 
